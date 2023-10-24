@@ -13,7 +13,7 @@ public class Song {
     @Column(name="song_id")
     private Long id;
 
-    @Column(name="song_name")
+    @Column(name="title")
     private String title;
 
     @Column(name="artist")
