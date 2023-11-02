@@ -10,11 +10,13 @@ import java.util.List;
 
 @Repository
 public interface SongRepository extends JpaRepository<Song, Long> {
-    Page<Song> findByTitleContaining(String title, Pageable pageable);
+    Page<Song> findByTitleIgnoreCaseContaining(String title, Pageable pageable);
 
-    Page<Song> findByArtistContaining(String artist, Pageable pageable);
+    Page<Song> findByArtistIgnoreCaseContaining(String artist, Pageable pageable);
 
-    Page<Song> findByAlbumContaining(String album, Pageable pageable);
+    Page<Song> findByAlbumIgnoreCaseContaining(String album, Pageable pageable);
+
+    List<Song> findTop5ByOrderByClicksDesc();
 
     Page<Song> findAll(Pageable pageable);
 }

@@ -6,6 +6,8 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 public class SongService {
     private final SongRepository songRepository;
@@ -18,8 +20,15 @@ public class SongService {
         return songRepository.findAll(pageable);
     }
 
-    public Page<Song> findByTitleContaining(String title, Pageable pageable) {
-        return songRepository.findByTitleContaining(title, pageable);
+    public Page<Song> findByTitleIgnoreCaseContaining(String title, Pageable pageable) {
+        return songRepository.findByTitleIgnoreCaseContaining(title, pageable);
+    }
 
+    public List<Song> getTopFiveSongsByClicks() {
+        return songRepository.findTop5ByOrderByClicksDesc();
+    }
+
+    public Song addSong(Song song) {
+        return songRepository.save(song);
     }
 }
