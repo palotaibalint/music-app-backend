@@ -36,6 +36,10 @@ public class Song {
     @ManyToMany(mappedBy = "songs")
     private List<Playlist> playlists;
 
+    public Song(){
+
+    }
+
     public Song(String title, String artist, String album, String duration, String img) {
         this.title = title;
         this.artist = artist;
