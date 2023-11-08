@@ -43,7 +43,7 @@ public class PlaylistController {
         if (playlist != null && song != null) {
             playlist.getSongs().add(song);
             playlistRepository.save(playlist);
-        }
+        }   
 
         return new ResponseEntity<>(playlist, HttpStatus.OK);
     }
