@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.List;
+import org.springframework.web.multipart.MultipartFile;
 
 @Entity
 @Table(name="song")
@@ -33,6 +34,9 @@ public class Song {
     @Column(name = "clicks", columnDefinition = "int default 0")
     private int clicks;
 
+    @Lob
+    private byte[] file;
+
     @ManyToMany(mappedBy = "songs")
     private List<Playlist> playlists;
 
@@ -40,13 +44,14 @@ public class Song {
 
     }
 
-    public Song(String title, String artist, String album, String duration, String img) {
+    public Song(String title, String artist, String album, String duration, String img, byte[] file) {
         this.title = title;
         this.artist = artist;
         this.album = album;
         this.duration = duration;
         this.img = img;
         this.clicks=0;
+        this.file=file;
     }
 
 

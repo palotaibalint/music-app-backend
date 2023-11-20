@@ -11,7 +11,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 
 @CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
@@ -52,9 +54,10 @@ public class SongController {
             @RequestParam("artist") String artist,
             @RequestParam("album") String album,
             @RequestParam("duration") String duration,
-            @RequestParam("img") String img
-    ) {
-        Song createdSong = new Song(title, artist, album, duration, img);
+            @RequestParam("img") String img,
+            @RequestParam("file") MultipartFile file
+    ) throws IOException {
+        Song createdSong = new Song(title, artist, album, duration, img, file.getBytes());
         songService.addSong(createdSong);
         return new ResponseEntity<>(createdSong, HttpStatus.CREATED);
     }

@@ -25,7 +25,7 @@ public class ReviewService {
         this.reviewRepository=reviewRepository;
     }
 
-    public void postReview(String userEmail, ReviewRequest reviewRequest) throws Exception{
+    public Review postReview(String userEmail, ReviewRequest reviewRequest) throws Exception{
         Review validateReview = reviewRepository.findByUserEmailAndSongId(userEmail, reviewRequest.getSongId());
         if(validateReview != null){
             throw new Exception("Review already created");
@@ -46,7 +46,7 @@ public class ReviewService {
             ).orElse(null));
         }
         review.setDate(Date.valueOf(LocalDate.now()));
-        reviewRepository.save(review);
+       return  reviewRepository.save(review);
     }
 
     public boolean userReviewListed(String userEmail, Long songId){
