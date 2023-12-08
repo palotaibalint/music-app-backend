@@ -9,9 +9,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-@CrossOrigin(origins="http://localhost:3000", allowCredentials = "true")
+import java.util.Optional;
+
 @RestController
 @RequestMapping("/api/reviews")
+@CrossOrigin(origins = "*", allowedHeaders = "*")
 public class ReviewController {
 
     private ReviewService reviewService;
@@ -20,22 +22,35 @@ public class ReviewController {
         this.reviewService = reviewService;
     }
 
-    @GetMapping("/user")
-    public ResponseEntity<Review> getReviewByUserEmailAndSongId(@RequestParam String userName, @RequestParam Long songId) {
-        Review review = reviewService.getReviewByUserEmailAndSongId(userName,songId);
+    @GetMapping("/private/user/song")
+    public ResponseEntity<Review> getReviewByUserEmailAndSongId(@RequestParam String userEmail, @RequestParam Long songId) {
+        Review review = reviewService.getReviewByUserEmailAndSongId(userEmail,songId);
         return new ResponseEntity<>(review,HttpStatus.OK);
     }
 
-    @GetMapping("/song")
+    @GetMapping("/public/by-id")
     public ResponseEntity<Page<Review>> getReviewsBySongId(@RequestParam Long songId, Pageable pageable) {
         Page<Review> reviews = reviewService.getReviewsBySongId(songId,pageable);
         return new ResponseEntity<>(reviews, HttpStatus.OK);
     }
 
-    @PostMapping("/user")
-    public ResponseEntity<Review> postReviewByUsername(@RequestBody String userName,@RequestBody ReviewRequest reviewRequest) throws Exception {
-        Review review = reviewService.postReview(userName, reviewRequest);
+    @PostMapping("/private/post")
+    public ResponseEntity<Review> postReviewByUsername(@RequestParam String userName,@RequestParam String userEmail,@RequestBody ReviewRequest reviewRequest) throws Exception {
+        Review review = reviewService.postReview( userName, userEmail, reviewRequest);
         return new ResponseEntity<>(review,HttpStatus.OK);
     }
+
+    @DeleteMapping("/private/delete")
+    public ResponseEntity<Void> deleteReview(@RequestParam String userEmail, @RequestParam Long songId) {
+        try {
+            reviewService.deleteReview(userEmail, songId);
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        } catch (ReviewService.ReviewNotFoundException e) {
+            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        } catch (Exception e) {
+            return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
+        }
+    }
+
 
 }

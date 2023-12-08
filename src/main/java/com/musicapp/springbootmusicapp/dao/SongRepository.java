@@ -19,5 +19,6 @@ public interface SongRepository extends JpaRepository<Song, Long> {
     List<Song> findTop5ByOrderByClicksDesc();
 
     Page<Song> findAll(Pageable pageable);
+
 }
 

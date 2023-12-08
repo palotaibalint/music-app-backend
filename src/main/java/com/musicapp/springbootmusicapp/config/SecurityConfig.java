@@ -3,6 +3,7 @@ package com.musicapp.springbootmusicapp.config;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.web.SecurityFilterChain;
@@ -13,11 +14,13 @@ import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 import static org.springframework.security.config.Customizer.withDefaults;
 
-@Configuration
 @EnableWebSecurity
+@EnableMethodSecurity
+@Configuration
 public class SecurityConfig {
 
     @Value("${okta.oauth2.issuer}")
@@ -26,18 +29,34 @@ public class SecurityConfig {
     private String clientId;
 
     @Bean
-    public SecurityFilterChain configure(HttpSecurity http) throws Exception {
-        http
-                .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/public","/", "/api/songs/**").permitAll()
-                        .anyRequest().authenticated()
+    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+        return http
+                .authorizeHttpRequests((authorize) -> authorize
+                        .requestMatchers("/","/api/songs/public/**","/api/reviews/public/**","/api/playlists/public/**","/api/comments/public/**").permitAll()
+                        .requestMatchers("/api/songs/private/**","/api/reviews/private/**","/api/playlists/private/**","/api/comments/private/**").authenticated()
+                        .requestMatchers("/api/private-scoped").hasAuthority("SCOPE_read:messages")
                 )
                 .oauth2Login(withDefaults())
-
-                // configure logout with Auth0
+                .csrf().disable()
+                .cors(withDefaults())
+                .oauth2ResourceServer(oauth2 -> oauth2
+                        .jwt(withDefaults())
+                )
                 .logout(logout -> logout
-                        .addLogoutHandler(logoutHandler()));
-        return http.build();
+                        .addLogoutHandler(logoutHandler())
+                )
+                .build();
+    }
+
+    @Bean
+    CorsConfigurationSource corsConfigurationSource() {
+        CorsConfiguration configuration = new CorsConfiguration();
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000","http://localhost:8081"));
+        configuration.setAllowedMethods(Arrays.asList("OPTIONS","GET", "POST", "PUT", "DELETE"));
+        configuration.addAllowedHeader("*");
+        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
+        source.registerCorsConfiguration("/**", configuration);
+        return source;
     }
 
     private LogoutHandler logoutHandler() {
@@ -49,18 +68,5 @@ public class SecurityConfig {
                 throw new RuntimeException(e);
             }
         };
-    }
-
-    @Bean
-    public CorsConfigurationSource corsConfigurationSource() {
-        CorsConfiguration configuration = new CorsConfiguration();
-        configuration.addAllowedOrigin("*"); // Allow requests from any origin
-        configuration.addAllowedMethod("*"); // Allow all HTTP methods
-        configuration.addAllowedHeader("*"); // Allow all headers
-        configuration.setAllowCredentials(true); // Allow sending credentials like cookies
-
-        UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
-        source.registerCorsConfiguration("/**", configuration);
-        return source;
     }
 }

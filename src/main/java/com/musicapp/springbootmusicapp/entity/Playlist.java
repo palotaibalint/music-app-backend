@@ -14,8 +14,11 @@ public class Playlist {
     @Column(name="playlist_id")
     private Long id;
 
-    @Column(name="name")
+    @Column(name="playlist_name")
     private String name;
+
+    @Column(name="username")
+    private String user;
 
     @ManyToMany
     @JoinTable(
@@ -25,6 +28,13 @@ public class Playlist {
     )
     private List<Song> songs;
 
-    // Constructors, getters, and setters
+    public Playlist(){
+
+    }
+
+    public Playlist(String user,String name){
+        this.user=user;
+        this.name=name;
+    }
 }
 

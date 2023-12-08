@@ -15,10 +15,11 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.Optional;
 
-@CrossOrigin(origins = "http://localhost:3000", allowCredentials = "true")
 @RestController
 @RequestMapping("/api/songs")
+@CrossOrigin(origins="http://localhost:3000", allowCredentials = "true")
 public class SongController {
 
     @Autowired
@@ -27,8 +28,8 @@ public class SongController {
     @Autowired
     private SongRepository songRepository;
 
-    @GetMapping("/search")
-    public ResponseEntity<Page<Song>> getSongsByTitle(@RequestParam("title") String title,
+    @GetMapping("/public/search/title")
+    public ResponseEntity<Page<Song>> getSongsByTitle(@RequestParam(name = "title", defaultValue = "") String title,
                                           @RequestParam(name = "page", defaultValue = "0") int page,
                                           @RequestParam(name = "size", defaultValue = "10") int size) {
         Pageable pageable = PageRequest.of(page, size);
@@ -43,21 +44,59 @@ public class SongController {
         return new ResponseEntity<>(songs, HttpStatus.OK);
     }
 
-    @GetMapping("/top-songs")
+    @GetMapping("/public/search/artist")
+    public ResponseEntity<Page<Song>> getSongsByArtist(@RequestParam(name = "artist", defaultValue = "") String artist,
+                                                      @RequestParam(name = "page", defaultValue = "0") int page,
+                                                      @RequestParam(name = "size", defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Song> songs;
+        if (artist != null && !artist.isEmpty()) {
+            songs = songService.findByArtistIgnoreCaseContaining(artist,pageable);
+        }
+        else{
+            songs = songService.getAllSongs(pageable);
+        }
+
+        return new ResponseEntity<>(songs, HttpStatus.OK);
+    }
+
+    @GetMapping("/public/search/album")
+    public ResponseEntity<Page<Song>> getSongsByAlbum(@RequestParam(name = "album", defaultValue = "") String album,
+                                                       @RequestParam(name = "page", defaultValue = "0") int page,
+                                                       @RequestParam(name = "size", defaultValue = "10") int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Song> songs;
+        if (album != null && !album.isEmpty()) {
+            songs = songService.findByAlbumIgnoreCaseContaining(album,pageable);
+        }
+        else{
+            songs = songService.getAllSongs(pageable);
+        }
+
+        return new ResponseEntity<>(songs, HttpStatus.OK);
+    }
+
+    @GetMapping("/public/top-songs")
     public ResponseEntity<List<Song>> getTopSongs() {
         return new ResponseEntity<>(songService.getTopFiveSongsByClicks(),HttpStatus.OK);
     }
 
-    @PostMapping("/addSong")
+    @GetMapping("/public/with-id")
+    public ResponseEntity<Optional<Song>> getSongById(@RequestParam("id") Long id) {
+        return new ResponseEntity<>(songService.getSongById(id),HttpStatus.OK);
+    }
+
+    @PostMapping("/private/addSong")
     public ResponseEntity<Song> addSong(
             @RequestParam("title") String title,
             @RequestParam("artist") String artist,
             @RequestParam("album") String album,
             @RequestParam("duration") String duration,
+            @RequestParam("genres") String[] genres,
             @RequestParam("img") String img,
             @RequestParam("file") MultipartFile file
     ) throws IOException {
-        Song createdSong = new Song(title, artist, album, duration, img, file.getBytes());
+        Song createdSong = new Song(title, artist, album, duration, img,genres, file.getBytes());
         songService.addSong(createdSong);
         return new ResponseEntity<>(createdSong, HttpStatus.CREATED);
     }

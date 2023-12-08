@@ -16,12 +16,11 @@ public class PlaylistService {
     private PlaylistRepository playlistRepository;
 
     public Playlist createPlaylist(Playlist playlist) {
-        // Implement the logic to create and save the playlist.
         return playlistRepository.save(playlist);
     }
 
-    public List<Playlist> getAllPlaylists() {
-        return playlistRepository.findAll();
+    public List<Playlist> getAllUserPlaylists(String user) {
+        return playlistRepository.findByUser(user);
     }
 }
 

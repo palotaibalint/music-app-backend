@@ -13,6 +13,8 @@ public class ReviewRequest {
 
     private String userName;
 
+    private String userEmail;
+
     private Optional<String> reviewTitle;
 
     private Optional<String> reviewDescription;

@@ -25,11 +25,14 @@ public class Song {
     @Column(name="album")
     private String album;
 
-    @Column(name="duration")
-    private String duration;
-
     @Column(name="img")
     private String img;
+
+    @Column(name="genres")
+    private String[] genres;
+
+    @Column(name="duration")
+    private String duration;
 
     @Column(name = "clicks", columnDefinition = "int default 0")
     private int clicks;
@@ -44,12 +47,13 @@ public class Song {
 
     }
 
-    public Song(String title, String artist, String album, String duration, String img, byte[] file) {
+    public Song(String title, String artist, String album, String duration, String img,String[] genres, byte[] file) {
         this.title = title;
         this.artist = artist;
         this.album = album;
         this.duration = duration;
         this.img = img;
+        this.genres=genres;
         this.clicks=0;
         this.file=file;
     }
