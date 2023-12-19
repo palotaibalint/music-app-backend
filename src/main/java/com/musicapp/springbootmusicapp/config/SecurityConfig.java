@@ -32,8 +32,8 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         return http
                 .authorizeHttpRequests((authorize) -> authorize
-                        .requestMatchers("/","/api/songs/public/**","/api/reviews/public/**","/api/playlists/public/**","/api/comments/public/**").permitAll()
-                        .requestMatchers("/api/songs/private/**","/api/reviews/private/**","/api/playlists/private/**","/api/comments/private/**").authenticated()
+                        .requestMatchers("/","/api/songs/public/**","/api/messages/public/**","/api/users/public/**","/api/reviews/public/**","/api/playlists/public/**","/api/comments/public/**").permitAll()
+                        .requestMatchers("/api/songs/private/**","/api/messages/private/**","/api/users/private/**","/api/reviews/private/**","/api/playlists/private/**","/api/comments/private/**").authenticated()
                         .requestMatchers("/api/private-scoped").hasAuthority("SCOPE_read:messages")
                 )
                 .oauth2Login(withDefaults())

@@ -1,9 +1,12 @@
 package com.musicapp.springbootmusicapp.controller;
 
 import com.musicapp.springbootmusicapp.dao.SongRepository;
-import com.musicapp.springbootmusicapp.entity.Playlist;
+import com.musicapp.springbootmusicapp.dto.SongDTO;
 import com.musicapp.springbootmusicapp.entity.Song;
+import com.musicapp.springbootmusicapp.entity.User;
 import com.musicapp.springbootmusicapp.service.SongService;
+import com.musicapp.springbootmusicapp.service.UserService;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
@@ -11,9 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Optional;
 
@@ -23,10 +24,19 @@ import java.util.Optional;
 public class SongController {
 
     @Autowired
+    private final UserService userService;
+
+    @Autowired
     private SongService songService;
 
     @Autowired
     private SongRepository songRepository;
+
+    public SongController(UserService userService, SongService songService, SongRepository songRepository) {
+        this.userService = userService;
+        this.songService = songService;
+        this.songRepository = songRepository;
+    }
 
     @GetMapping("/public/search/title")
     public ResponseEntity<Page<Song>> getSongsByTitle(@RequestParam(name = "title", defaultValue = "") String title,
@@ -60,6 +70,42 @@ public class SongController {
         return new ResponseEntity<>(songs, HttpStatus.OK);
     }
 
+    @GetMapping("public/most-reviews")
+    public ResponseEntity<List<Song>> getSongsWithMostReviews() {
+        List<Song> songs = songService.findSongsWithMostReviews();
+        if (songs.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(songs, HttpStatus.OK);
+    }
+
+    @GetMapping("public/most-on-playlists")
+    public ResponseEntity<List<Song>> getPopularPlaylistSongs() {
+        List<Song> songs = songService.findPopularPlaylistSongs();
+        if (songs.isEmpty()) {
+            return new ResponseEntity<>(HttpStatus.NO_CONTENT);
+        }
+        return new ResponseEntity<>(songs, HttpStatus.OK);
+    }
+
+    @Transactional
+    @PostMapping("/private/upload")
+    public ResponseEntity<?> uploadSong(@RequestBody SongDTO songDTO) {
+        Song song = new Song();
+        song.setTitle(songDTO.getTitle());
+        song.setArtist(songDTO.getArtist());
+        song.setAlbum(songDTO.getAlbum());
+        song.setDuration(songDTO.getDuration());
+        song.setImg(songDTO.getImg());
+        song.setLink(songDTO.getLink());
+        song.setGenres(songDTO.getGenres().split(","));
+        song.setMusicUser(userService.findByUsername(songDTO.getOwnerUsername()));
+
+        songRepository.save(song);
+
+        return ResponseEntity.ok().build();
+    }
+
     @GetMapping("/public/search/album")
     public ResponseEntity<Page<Song>> getSongsByAlbum(@RequestParam(name = "album", defaultValue = "") String album,
                                                        @RequestParam(name = "page", defaultValue = "0") int page,
@@ -86,18 +132,28 @@ public class SongController {
         return new ResponseEntity<>(songService.getSongById(id),HttpStatus.OK);
     }
 
-    @PostMapping("/private/addSong")
-    public ResponseEntity<Song> addSong(
-            @RequestParam("title") String title,
-            @RequestParam("artist") String artist,
-            @RequestParam("album") String album,
-            @RequestParam("duration") String duration,
-            @RequestParam("genres") String[] genres,
-            @RequestParam("img") String img,
-            @RequestParam("file") MultipartFile file
-    ) throws IOException {
-        Song createdSong = new Song(title, artist, album, duration, img,genres, file.getBytes());
-        songService.addSong(createdSong);
-        return new ResponseEntity<>(createdSong, HttpStatus.CREATED);
+    @GetMapping("/public/incrementClicks")
+    public ResponseEntity<Integer> incrementClicks(@RequestParam("id") Long id) {
+        Integer updatedClicks = songService.incrementSongClicks(id);
+        return new ResponseEntity<>(updatedClicks, HttpStatus.OK);
     }
+
+    @GetMapping("/private/song-owner")
+    public ResponseEntity<String> getSongOwnerUsername(@RequestParam("id") Long songId) {
+        Optional<Song> songOpt = songService.getSongById(songId);
+
+        if (songOpt.isPresent()) {
+            Song song = songOpt.get();
+            User owner = song.getMusicUser();
+
+            if (owner != null) {
+                return new ResponseEntity<>(owner.getUsername(), HttpStatus.OK);
+            } else {
+                return new ResponseEntity<>("No owner associated with this song", HttpStatus.OK);
+            }
+        } else {
+            return new ResponseEntity<>("Song not found", HttpStatus.NOT_FOUND);
+        }
+    }
+
 }

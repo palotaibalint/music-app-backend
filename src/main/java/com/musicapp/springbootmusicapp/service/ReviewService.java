@@ -1,12 +1,13 @@
 package com.musicapp.springbootmusicapp.service;
 
 import com.musicapp.springbootmusicapp.dao.ReviewRepository;
-import com.musicapp.springbootmusicapp.dao.SongRepository;
 import com.musicapp.springbootmusicapp.entity.Review;
 import com.musicapp.springbootmusicapp.requestmodels.ReviewRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 
 import java.sql.Date;
 import java.time.LocalDate;
-import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -69,6 +69,12 @@ public class ReviewService {
         } else {
             throw new ReviewNotFoundException("Review not found with userEmail: " + userEmail + " and songId: " + songId);
         }
+    }
+
+    public Optional<Page<Review>> getLatestReviewsByUserName(String username) {
+        int pageSize = 5;
+        PageRequest pageRequest = PageRequest.of(0, pageSize, Sort.by("date").descending());
+        return reviewRepository.findByUserNameOrderByDateDesc(username, pageRequest);
     }
 
     public Page<Review> getReviewsBySongId(Long songId, Pageable pageable) {

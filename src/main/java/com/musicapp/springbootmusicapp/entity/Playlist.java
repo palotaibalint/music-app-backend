@@ -1,5 +1,6 @@
 package com.musicapp.springbootmusicapp.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -20,12 +21,13 @@ public class Playlist {
     @Column(name="username")
     private String user;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
             name = "playlist_song",
             joinColumns = @JoinColumn(name = "playlist_id"),
             inverseJoinColumns = @JoinColumn(name = "song_id")
     )
+    @JsonManagedReference
     private List<Song> songs;
 
     public Playlist(){

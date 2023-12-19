@@ -37,4 +37,19 @@ public class Review {
 
     @Column(name="review_description")
     private String reviewDescription;
+
+    public Review(){
+
+    }
+
+    public Review(long id, String userEmail, String userName, long songId, Date date, double rating, String reviewTitle, String reviewDescription) {
+        this.id = id;
+        this.userEmail = userEmail;
+        this.userName = userName;
+        this.songId = songId;
+        this.date = date;
+        this.rating = rating;
+        this.reviewTitle = reviewTitle;
+        this.reviewDescription = reviewDescription;
+    }
 }

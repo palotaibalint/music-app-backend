@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Collection;
 import java.util.Optional;
 
 @RestController
@@ -38,6 +39,19 @@ public class ReviewController {
     public ResponseEntity<Review> postReviewByUsername(@RequestParam String userName,@RequestParam String userEmail,@RequestBody ReviewRequest reviewRequest) throws Exception {
         Review review = reviewService.postReview( userName, userEmail, reviewRequest);
         return new ResponseEntity<>(review,HttpStatus.OK);
+    }
+
+    @GetMapping("/private/user/latest")
+    public ResponseEntity<Page<Review>> getLatestReviewsByUser(@RequestParam String username) {
+        Optional<Page<Review>> reviews = reviewService.getLatestReviewsByUserName(username);
+        if(reviews.isPresent()){
+            return ResponseEntity.ok(reviews.get());
+        }
+        else{
+            Page<Review> emptyPage = Page.empty();
+            return ResponseEntity.ok(emptyPage);
+        }
+
     }
 
     @DeleteMapping("/private/delete")
